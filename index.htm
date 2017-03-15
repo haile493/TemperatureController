@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Temperature Controller</title>
+        <script>
+		strCB1 = "";
+		strCB2 = "";
+		strd1H = "";
+		strd1L = "";
+		strd2H = "";
+		strd2L = "";		
+		//datetime = "";
+		//strLED3 = "";
+		//strLED4 = "";
+		var CB1_state = 0;
+		var CB2_state = 0;
+		
+		function GetArduinoIO()
+		{
+			nocache = "&nocache=" + Math.random() * 1000000;
+			var request = new XMLHttpRequest();		
+			//document.body.style.background-image = "url('gui-p1.jpg')";
+			request.onreadystatechange = function()
+			{
+				if (this.readyState == 4) {
+					if (this.status == 200) {
+						if (this.responseXML != null) {							
+							// XML file received - contains date, time, analog values and CB states							
+							document.getElementsByClassName("datesensor")[0].innerHTML =
+									this.responseXML.getElementsByTagName('datesensor')[0].childNodes[0].nodeValue;
+							
+							// get analog inputs
+							var count;
+							var num_an = this.responseXML.getElementsByTagName('analog').length;
+							for (count = 0; count < num_an; count++) {
+								document.getElementsByClassName("analog")[count].innerHTML =
+									this.responseXML.getElementsByTagName('analog')[count].childNodes[0].nodeValue;
+							}
+							
+							// get high and low thresholding values for controlling bump
+							var num_delta = this.responseXML.getElementsByTagName('deltaval').length;
+							for (count = 0; count < num_an; count++) {
+								document.getElementsByClassName("deltaval")[count].innerHTML =
+									this.responseXML.getElementsByTagName('deltaval')[count].childNodes[0].nodeValue;
+							}
+							
+							// CB 1
+							if (this.responseXML.getElementsByTagName('CB')[0].childNodes[0].nodeValue === "on") {
+								document.getElementById("CB1").innerHTML = "CB 1 is ON";
+								CB1_state = 1;
+							}
+							else {
+								document.getElementById("CB1").innerHTML = "CB 1 is OFF";
+								CB1_state = 0;
+							}
+							
+							// CB 2
+							if (this.responseXML.getElementsByTagName('CB')[1].childNodes[0].nodeValue === "on") {
+								document.getElementById("CB2").innerHTML = "CB 2 is ON";
+								CB2_state = 1;
+							}
+							else {
+								document.getElementById("CB2").innerHTML = "CB 2 is OFF";
+								CB2_state = 0;
+							}							
+						}
+					}
+				}
+			}			
+			// send HTTP GET request with CBs to switch on/off if any
+			request.open("GET", "ajax_inputs" + strCB1 + strCB2 + strd1H + strd1L + strd2H + strd2L + nocache, true);
+			request.send(null);
+			setTimeout('GetArduinoIO()', 1000); //1000ms
+			strCB1 = "";
+			strCB2 = "";
+			strd1H = "";
+			strd1L = "";
+			strd2H = "";
+			strd2L = "";
+			placeObj(100, 150, 'CB1')			
+			//strLED3 = "";
+			//strLED4 = "";
+			//var datetime = date_time("date_time");			
+		}
+		// service LEDs when checkbox checked/unchecked
+		/*function GetCheck()
+		{
+			if (LED_form.LED1.checked) {
+				strLED1 = "&LED1=1";
+			}
+			else {
+				strLED1 = "&LED1=0";
+			}
+			if (LED_form.LED2.checked) {
+				strLED2 = "&LED2=1";
+			}
+			else {
+				strLED2 = "&LED2=0";
+			}
+		}*/		
+		function GetDelta()
+		{
+			var x1 = document.getElementById("d1H").value;			
+			strd1H = "&d1H=" + x1;
+			
+			var x2 = document.getElementById("d1L").value;			
+			strd1L = "&d1L=" + x2;
+			
+			var x3 = document.getElementById("d2H").value;			
+			strd2H = "&d2H=" + x3;
+			
+			var x4 = document.getElementById("d2L").value;			
+			strd2L = "&d2L=" + x4;			
+		}		
+		function GetCB1()
+		{
+			if (CB1_state === 1) {
+				CB1_state = 0;
+				strCB1 = "&CB1=0";
+			}
+			else {
+				CB1_state = 1;
+				strCB1 = "&CB1=1";
+			}
+		}
+		function GetCB2()
+		{
+			if (CB2_state === 1) {
+				CB2_state = 0;
+				strCB2 = "&CB2=0";
+			}
+			else {
+				CB2_state = 1;
+				strCB2 = "&CB2=1";
+			}
+		}
+		function placeObj(x_pos, y_pos, id) {
+			var d = document.getElementById(id);
+			d.style.position = "absolute";
+			d.style.left = x_pos + 'px';
+			d.style.top = y_pos + 'px';
+			//document.getElementById('myElement').style.position = "absolute";
+			//document.getElementById('myElement').style.top = 0; //or whatever 
+			//document.getElementById('myElement').style.left = 0; // or whatever
+		}
+		function date_time(id){
+			date = new Date;
+			year = date.getFullYear();
+			month = date.getMonth();
+			//months = new Array('January', 'February', 'March', 'April', 'May', 'June', 'Jully', 'August', 'September', 'October', 'November', 'December');
+			months = new Array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
+			d = date.getDate();
+			day = date.getDay();
+			//days = new Array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
+			h = date.getHours();
+			if(d<10)
+			{
+				d = "0"+d;
+			}
+			if(h<10)
+			{
+				h = "0"+h;
+			}
+			m = date.getMinutes();
+			if(m<10)
+			{
+				m = "0"+m;
+			}
+			s = date.getSeconds();
+			if(s<10)
+			{
+				s = "0"+s;
+			}
+			//result = ''+days[day]+' '+months[month]+' '+d+' '+year+' '+h+':'+m+':'+s;
+			result = d+'/'+months[month]+'/'+year+' '+h+':'+m+':'+s;
+			document.getElementById(id).innerHTML = result;
+			setTimeout('date_time("'+id+'");','1000');
+			return true;
+		} 
+	</script>
+	<style>
+		body { /* set one image to background image */
+			background-image: url("gui-p1.jpg");
+			background-repeat: no-repeat;
+		}
+		.placebt {
+			position: absolute;
+			border: 3px solid #73AD21;
+			top: 150px;
+			left: 200px;			
+		}
+		.placeTS1 {
+			position: absolute;
+			/*border: 1px solid #73AD21;*/			
+			top: 228px;
+			left: 165px;		
+		}
+		.placeTS2 {
+			position: absolute;
+			/*border: 1px solid #73AD21;*/			
+			top: 228px;
+			left: 930px;		
+		}
+		.IO_box {
+			float: left;
+			margin: 0 20px 20px 0;
+			border: 1px solid blue;
+			padding: 0 5px 0 5px; /* The CSS padding properties are used to generate space around content: top right bottom left*/
+			width: 120px;
+		}
+		.IO_box2 {
+			float: left;
+			margin: 0 20px 20px 0;
+			border: 1px solid blue;
+			padding: 0 5px 0 5px;
+			width: 160px;
+		}
+		h1 {
+			font-size: 120%;
+			color: blue;
+			margin: 0 0 10px 0;
+		}
+		h2 {
+			font-size: 95%;
+			color: #5734E6;
+			margin: 5px 0 5px 0;
+		}
+		p, form, button {
+			font-size: 80%;
+			color: #252525;
+		}		
+		.small_text {
+			font-size: 70%;
+			color: #737373;
+		}
+		.medium_text {
+			font-size: 110%;
+			color: black;
+		}
+		.medium_text2 {
+			font-size: 110%;
+			color: blue;
+		}
+		.large_text {
+			font-size: 150%;
+			color: black;
+		}		
+	</style>
+    </head>
+    <body onload="GetArduinoIO()">
+        <h1>Temperature Controller</h1>
+        <div class="IO_box">
+			<h2>Temperature Values</h2>			
+			<!--<p class=medium_text>Date: <span id="date_time">...</span></p>-->
+			<p class=medium_text>Date: <span class="datesensor">...</span></p>			
+			<p class=medium_text>TS1: <span class="analog">...</span></p>
+			<p class=medium_text>TS2: <span class="analog">...</span></p>
+			<p class=medium_text>TST1: <span class="analog">...</span></p>
+			<p class=medium_text>TST2: <span class="analog">...</span></p>
+		</div>		
+		<div class="IO_box">
+			<h2>Controlling CBs</h2>
+			<p align=center><button type="button" id="CB1" onclick="GetCB1()" class=medium_text>CB 1 is OFF</button></p>
+			<p align=center><button type="button" id="CB2" onclick="GetCB2()" class=medium_text>CB 2 is OFF</button></p>		
+		</div>
+		<div class="IO_box" x=230 y=300>
+			<h2>Delta Values</h2>
+			<p class=medium_text>Delta1H: <span class="deltaval">...</span></p>
+			<p class=medium_text>Delta1L: <span class="deltaval">...</span></p>
+			<p class=medium_text>Delta2H: <span class="deltaval">...</span></p>
+			<p class=medium_text>Delta2L: <span class="deltaval">...</span></p>			
+		</div>
+		<div class="IO_box2">
+			<h2>Delta Values Setting</h2>
+			<form id="set_delta" name="delta_form" class=medium_text>
+				<p class=medium_text>Delta1 High: <input type="text" id="d1H" value="2" maxlength="3" size="3"></p>
+				<p class=medium_text>Delta1 Low: <input type="text" id="d1L" value="2" maxlength="3" size="3"></p>
+				<p class=medium_text>Delta2 High: <input type="text" id="d2H" value="2" maxlength="3" size="3"></p>
+				<p class=medium_text>Delta2 Low: <input type="text" id="d2L" value="2" maxlength="3" size="3"></p>
+				<p align=center><button type="button" id="setdelta" onclick="GetDelta()" class=medium_text>Set</button></p>
+			</form>			
+		</div>
+		<!--<div class="placebt">
+		<p align=center><button type="button" id="CB1" onclick="GetCB1()" class=medium_text>Hello</button></p>
+		</div>-->
+		<div class="placeTS1">
+			<p class=medium_text2><span class="analog">...</span></p>
+		</div>
+		<div class="placeTS2">
+			<p class=medium_text2><span class="analog">...</span></p>
+		</div>		
+		</ br>
+		</ br>		
+    </body>
+</html>
