@@ -1,4 +1,4 @@
-# TemperatureController2
+# Temperature Controller 
 Design a controller to monitor and control temperature of water in tanks
 Arduino web server that displays 4 analog inputs, the state of 4 values and controls 2 outputs using buttons.
 The web page is stored on the micro SD card.
